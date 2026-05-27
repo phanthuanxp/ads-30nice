@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>30Nice Ads Operations</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">30</span>
+          <div>
+            <strong>Ads Operations</strong>
+            <small>Meta Business Center</small>
+          </div>
+        </div>
+        <nav>
+          <a href="#overview" class="active">Tong quan</a>
+          <a href="#planner">Lap chien dich</a>
+          <a href="#performance">Hieu qua</a>
+          <a href="#rules">Toi uu</a>
+        </nav>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">ads.30nice.vn</p>
+            <h1>Quan ly nghien cuu, lap ke hoach va toi uu Meta Ads</h1>
+          </div>
+          <div class="status-pill" id="metaStatus">Dang kiem tra Meta API</div>
+        </header>
+
+        <section id="overview" class="section">
+          <div class="section-head">
+            <div>
+              <h2>Tai khoan quang cao</h2>
+              <p>Mot Meta Business, nhieu ad accounts, theo doi tap trung.</p>
+            </div>
+            <button class="icon-button" id="refreshAccounts" title="Tai lai tai khoan">↻</button>
+          </div>
+          <div class="account-grid" id="accountGrid"></div>
+        </section>
+
+        <section id="planner" class="section split">
+          <form class="panel" id="plannerForm">
+            <div class="section-head compact">
+              <div>
+                <h2>Lap chien dich</h2>
+                <p>Tao ban nhap truoc khi dua len Meta.</p>
+              </div>
+              <button type="submit">Luu ke hoach</button>
+            </div>
+
+            <div class="form-grid">
+              <label>
+                Nganh/dich vu
+                <input name="industry" placeholder="Spa, taxi, BDS, tuyen dung..." required />
+              </label>
+              <label>
+                Offer chinh
+                <input name="offer" placeholder="Tu van mien phi, uu dai 7 ngay..." required />
+              </label>
+              <label>
+                Khu vuc
+                <input name="location" placeholder="Ha Noi, HCM, Da Nang..." required />
+              </label>
+              <label>
+                Muc tieu
+                <select name="goal">
+                  <option value="leads">Lead form</option>
+                  <option value="messages">Tin nhan</option>
+                  <option value="sales">Chuyen doi/ban hang</option>
+                  <option value="traffic">Traffic</option>
+                  <option value="awareness">Nhan dien</option>
+                </select>
+              </label>
+              <label>
+                Ngan sach/ngay
+                <input name="dailyBudget" type="number" min="0" step="10000" placeholder="500000" />
+              </label>
+              <label>
+                Tuoi toi thieu
+                <input name="ageMin" type="number" min="13" value="22" />
+              </label>
+              <label>
+                Tuoi toi da
+                <input name="ageMax" type="number" min="13" value="55" />
+              </label>
+              <label class="wide">
+                Audience/insight dau vao
+                <textarea name="audience" rows="4" placeholder="Mo ta khach hang, pain point, khu vuc, so thich, hanh vi..."></textarea>
+              </label>
+            </div>
+          </form>
+
+          <div class="panel preview">
+            <div class="section-head compact">
+              <div>
+                <h2>Ban de xuat</h2>
+                <p id="previewUpdated">Cap nhat theo form.</p>
+              </div>
+              <button id="previewButton">Xem truoc</button>
+            </div>
+            <pre id="planPreview"></pre>
+          </div>
+        </section>
+
+        <section id="performance" class="section">
+          <div class="section-head">
+            <div>
+              <h2>Hieu qua chien dich</h2>
+              <p>Chon ad account de xem campaign 7 ngay gan nhat.</p>
+            </div>
+            <select id="accountSelect"></select>
+          </div>
+          <div class="metric-row" id="metricRow"></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Campaign</th>
+                  <th>Status</th>
+                  <th>Spend</th>
+                  <th>CTR</th>
+                  <th>CPC</th>
+                  <th>Results</th>
+                  <th>CPA</th>
+                  <th>Freq</th>
+                </tr>
+              </thead>
+              <tbody id="campaignRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="rules" class="section">
+          <div class="section-head">
+            <div>
+              <h2>Danh gia va toi uu</h2>
+              <p>Canh bao uu tien theo du lieu campaign.</p>
+            </div>
+          </div>
+          <div class="recommendations" id="recommendations"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

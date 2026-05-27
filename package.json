@@ -1,0 +1,15 @@
+{
+  "name": "ads-30nice",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Internal Meta Ads planning, monitoring, and optimization dashboard for 30Nice.",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "check": "node --check server.js && node --check src/config.js && node --check src/meta-client.js && node --check src/store.js && node --check src/recommendations.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
