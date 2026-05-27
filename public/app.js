@@ -1,7 +1,9 @@
 const state = {
   accounts: [],
   campaigns: [],
-  recommendations: []
+  recommendations: [],
+  plans: [],
+  session: null
 };
 
 const money = new Intl.NumberFormat("vi-VN", {
@@ -16,6 +18,15 @@ const number = new Intl.NumberFormat("vi-VN", {
 
 function $(selector) {
   return document.querySelector(selector);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 async function api(path, options = {}) {
@@ -46,13 +57,13 @@ function renderAccounts(meta) {
     .map(
       (account) => `
         <article class="account-card">
-          <strong>${account.name}</strong>
+          <strong>${escapeHtml(account.name)}</strong>
           <div class="account-meta">
-            <span>${account.id}</span>
-            <span>${account.currency || "VND"}</span>
+            <span>${escapeHtml(account.id)}</span>
+            <span>${escapeHtml(account.currency || "VND")}</span>
           </div>
           <div class="account-meta">
-            <span>${account.timezone_name || "Asia/Ho_Chi_Minh"}</span>
+            <span>${escapeHtml(account.timezone_name || "Asia/Ho_Chi_Minh")}</span>
             <span>${account.source === "meta" ? "Meta" : "Sample"}</span>
           </div>
         </article>
@@ -61,7 +72,7 @@ function renderAccounts(meta) {
     .join("");
 
   $("#accountSelect").innerHTML = state.accounts
-    .map((account) => `<option value="${account.id}">${account.name}</option>`)
+    .map((account) => `<option value="${escapeHtml(account.id)}">${escapeHtml(account.name)}</option>`)
     .join("");
 }
 
@@ -96,8 +107,8 @@ function renderCampaigns() {
     .map(
       (campaign) => `
         <tr>
-          <td>${campaign.name}</td>
-          <td><span class="status ${campaign.status === "PAUSED" ? "paused" : ""}">${campaign.effective_status || campaign.status}</span></td>
+          <td>${escapeHtml(campaign.name)}</td>
+          <td><span class="status ${campaign.status === "PAUSED" ? "paused" : ""}">${escapeHtml(campaign.effective_status || campaign.status)}</span></td>
           <td>${formatSpend(campaign.spend)}</td>
           <td>${number.format(campaign.ctr || 0)}%</td>
           <td>${formatSpend(campaign.cpc)}</td>
@@ -115,13 +126,45 @@ function renderRecommendations() {
     .map(
       (note) => `
         <article class="note ${note.priority}">
-          <h3>${note.title}</h3>
-          <p><strong>${note.campaign}</strong></p>
-          <p>${note.action}</p>
+          <h3>${escapeHtml(note.title)}</h3>
+          <p><strong>${escapeHtml(note.campaign)}</strong></p>
+          <p>${escapeHtml(note.action)}</p>
         </article>
       `
     )
     .join("");
+}
+
+function renderPlans() {
+  if (!state.plans.length) {
+    $("#plansList").innerHTML = `<p>Chua co ke hoach nao duoc luu.</p>`;
+    return;
+  }
+
+  $("#plansList").innerHTML = state.plans
+    .map((plan) => {
+      const output = plan.output || {};
+      const budget = output.budget?.daily ? formatSpend(output.budget.daily) : "Chua dat";
+      return `
+        <article class="plan-item">
+          <div>
+            <h3>${escapeHtml(output.name || plan.input?.industry || "Ke hoach moi")}</h3>
+            <p>${escapeHtml(output.objective || "")} · ${escapeHtml(budget)} · ${escapeHtml(plan.status)}</p>
+            <p class="plan-meta">Tao luc ${escapeHtml(new Date(plan.createdAt).toLocaleString("vi-VN"))}</p>
+          </div>
+          <button class="secondary" data-plan-id="${escapeHtml(plan.id)}">Xem JSON</button>
+        </article>
+      `;
+    })
+    .join("");
+
+  document.querySelectorAll("[data-plan-id]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const plan = state.plans.find((item) => item.id === button.dataset.planId);
+      $("#planPreview").textContent = JSON.stringify(plan?.output || plan, null, 2);
+      location.hash = "#planner";
+    });
+  });
 }
 
 async function loadAccounts() {
@@ -132,6 +175,12 @@ async function loadAccounts() {
     $("#accountSelect").value = state.accounts[0].id;
     await loadCampaigns(state.accounts[0].id);
   }
+}
+
+async function loadPlans() {
+  const payload = await api("/api/plans");
+  state.plans = payload.data;
+  renderPlans();
 }
 
 async function loadCampaigns(accountId) {
@@ -183,8 +232,43 @@ $("#plannerForm").addEventListener("submit", async (event) => {
   });
   $("#planPreview").textContent = JSON.stringify(payload.data.output, null, 2);
   toast("Da luu ke hoach chien dich.");
+  await loadPlans();
 });
 
-loadAccounts()
-  .then(previewPlan)
-  .catch((error) => toast(error.message));
+$("#refreshPlans").addEventListener("click", () => loadPlans().catch((error) => toast(error.message)));
+
+$("#loginForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = new FormData(event.currentTarget);
+  await api("/api/login", {
+    method: "POST",
+    body: JSON.stringify({
+      username: form.get("username"),
+      password: form.get("password")
+    })
+  });
+  $("#loginScreen").hidden = true;
+  toast("Dang nhap thanh cong.");
+  await boot();
+});
+
+$("#logoutButton").addEventListener("click", async () => {
+  await api("/api/logout", { method: "POST", body: "{}" });
+  location.reload();
+});
+
+async function boot() {
+  const session = await api("/api/session");
+  state.session = session.data;
+  $("#loginScreen").hidden = state.session.authenticated;
+  if (!state.session.authenticated) return;
+
+  await loadAccounts();
+  await loadPlans();
+  await previewPlan();
+}
+
+boot().catch((error) => {
+  $("#loginScreen").hidden = false;
+  toast(error.message);
+});

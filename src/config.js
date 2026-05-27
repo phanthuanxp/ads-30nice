@@ -35,9 +35,19 @@ export const config = {
     businessId: process.env.META_BUSINESS_ID || "",
     accessToken: process.env.META_ACCESS_TOKEN || ""
   },
+  auth: {
+    username: process.env.ADMIN_USERNAME || "",
+    password: process.env.ADMIN_PASSWORD || "",
+    sessionSecret: process.env.SESSION_SECRET || "",
+    cookieName: "ads30_session"
+  },
   adminKey: process.env.ADMIN_KEY || ""
 };
 
 export function hasMetaConfig() {
   return Boolean(config.meta.businessId && config.meta.accessToken);
+}
+
+export function hasAuthConfig() {
+  return Boolean(config.auth.username && config.auth.password && config.auth.sessionSecret);
 }

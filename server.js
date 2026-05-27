@@ -5,6 +5,13 @@ import { config } from "./src/config.js";
 import { createPlan, listPlans } from "./src/store.js";
 import { getAdAccounts, getCampaigns, getMetaHealth } from "./src/meta-client.js";
 import { buildCampaignPlan, buildOptimizationNotes } from "./src/recommendations.js";
+import {
+  assertAuthenticated,
+  clearSessionCookie,
+  createSessionCookie,
+  getAuthStatus,
+  validateCredentials
+} from "./src/auth.js";
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -17,7 +24,18 @@ const mimeTypes = {
 function sendJson(response, statusCode, payload) {
   response.writeHead(statusCode, {
     "content-type": "application/json; charset=utf-8",
-    "cache-control": "no-store"
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff"
+  });
+  response.end(JSON.stringify(payload));
+}
+
+function sendJsonWithHeaders(response, statusCode, payload, headers) {
+  response.writeHead(statusCode, {
+    "content-type": "application/json; charset=utf-8",
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff",
+    ...headers
   });
   response.end(JSON.stringify(payload));
 }
@@ -66,12 +84,18 @@ async function serveStatic(request, response, url) {
   try {
     const content = await fs.readFile(filePath);
     response.writeHead(200, {
-      "content-type": mimeTypes[path.extname(filePath)] || "application/octet-stream"
+      "content-type": mimeTypes[path.extname(filePath)] || "application/octet-stream",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "same-origin"
     });
     response.end(content);
   } catch {
     const fallback = await fs.readFile(path.join(config.publicDir, "index.html"));
-    response.writeHead(200, { "content-type": mimeTypes[".html"] });
+    response.writeHead(200, {
+      "content-type": mimeTypes[".html"],
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "same-origin"
+    });
     response.end(fallback);
   }
 }
@@ -85,6 +109,45 @@ async function routeApi(request, response, url) {
     });
     return true;
   }
+
+  if (url.pathname === "/api/session" && request.method === "GET") {
+    sendJson(response, 200, { data: getAuthStatus(request) });
+    return true;
+  }
+
+  if (url.pathname === "/api/login" && request.method === "POST") {
+    const input = await readBody(request);
+    if (!validateCredentials(input.username || "", input.password || "")) {
+      sendJson(response, 401, { error: "Sai tai khoan hoac mat khau." });
+      return true;
+    }
+
+    sendJsonWithHeaders(
+      response,
+      200,
+      {
+        data: {
+          enabled: true,
+          authenticated: true,
+          user: input.username || "admin"
+        },
+        ok: true
+      },
+      {
+        "set-cookie": createSessionCookie(input.username || "admin")
+      }
+    );
+    return true;
+  }
+
+  if (url.pathname === "/api/logout" && request.method === "POST") {
+    sendJsonWithHeaders(response, 200, { ok: true }, {
+      "set-cookie": clearSessionCookie()
+    });
+    return true;
+  }
+
+  assertAuthenticated(request);
 
   if (url.pathname === "/api/ad-accounts" && request.method === "GET") {
     sendJson(response, 200, { data: await getAdAccounts(), meta: getMetaHealth() });

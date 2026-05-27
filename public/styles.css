@@ -46,6 +46,57 @@ button:hover {
   background: var(--brand-strong);
 }
 
+button.secondary {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+
+button.secondary:hover {
+  background: #eef3f7;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.login-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: #101820;
+  padding: 20px;
+}
+
+.login-card {
+  width: min(420px, 100%);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 26px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
+}
+
+.login-card .brand-mark {
+  margin-bottom: 18px;
+  color: #fff;
+}
+
+.login-card h1 {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.login-card label {
+  margin: 14px 0;
+}
+
+.login-card button {
+  width: 100%;
+  margin-top: 6px;
+}
+
 .shell {
   display: grid;
   grid-template-columns: 260px 1fr;
@@ -155,6 +206,12 @@ p {
   padding: 8px 12px;
   color: var(--muted);
   font-size: 13px;
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .section,
@@ -358,6 +415,37 @@ th {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+}
+
+.plans-list {
+  display: grid;
+  gap: 10px;
+}
+
+.plan-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfd;
+  padding: 14px;
+}
+
+.plan-item h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.plan-item p {
+  margin-bottom: 0;
+  line-height: 1.45;
+}
+
+.plan-meta {
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .note {

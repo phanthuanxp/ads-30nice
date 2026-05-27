@@ -1,36 +1,23 @@
 # Ads 30Nice
 
-Internal Meta Ads planning, monitoring, and optimization dashboard for one verified Meta Business with multiple ad accounts.
+Internal dashboard for researching, planning, monitoring, and optimizing Meta Ads across many ad accounts under one verified Meta Business.
 
-## Current Scope
+## Features
 
-- Read all owned/client ad accounts from one Meta Business.
-- Read campaign performance from Meta Marketing API.
-- Show spend, clicks, CTR, CPC, CPA, frequency, and results.
-- Generate optimization notes from campaign metrics.
-- Create draft campaign plans before publishing anything to Meta.
-- Run without external npm dependencies.
-
-When Meta credentials are missing, the app runs with sample data so the UI can be reviewed immediately.
-
-## Requirements
-
-- Node.js 20+
-- Meta Business ID
-- Meta access token with the needed Marketing API permissions
-
-Recommended Meta permissions:
-
-- `ads_read`
-- `ads_management`
-- `business_management`
-- `pages_read_engagement`
-- `pages_show_list`
+- Internal login with signed HTTP-only session cookie.
+- Reads owned/client ad accounts from one Meta Business.
+- Reads campaign performance from Meta Marketing API.
+- Shows spend, impressions, clicks, CTR, CPC, CPA, frequency, and results.
+- Generates optimization notes from campaign metrics.
+- Creates and stores draft campaign plans before publishing anything to Meta.
+- Runs with sample data when Meta credentials are not configured.
+- No external npm dependencies.
 
 ## Local Run
 
 ```bash
 cp .env.example .env
+npm run secret
 npm run dev
 ```
 
@@ -40,99 +27,122 @@ Open:
 http://localhost:3010
 ```
 
-## Environment
+## Production Environment
+
+Create `/opt/ads-30nice/.env`:
 
 ```bash
 PORT=3010
 PUBLIC_BASE_URL=https://ads.30nice.vn
+
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=replace_with_a_strong_password
+SESSION_SECRET=replace_with_output_from_npm_run_secret
+
 META_API_VERSION=v25.0
-META_BUSINESS_ID=your_business_id
-META_ACCESS_TOKEN=your_long_lived_access_token
-ADMIN_KEY=optional_internal_write_key
+META_BUSINESS_ID=your_meta_business_id
+META_ACCESS_TOKEN=your_long_lived_meta_access_token
+
+ADMIN_KEY=
 ```
 
-If `ADMIN_KEY` is set, POST mutation endpoints require:
+Recommended Meta permissions:
 
-```text
-x-admin-key: your_key
-```
+- `ads_read`
+- `ads_management`
+- `business_management`
+- `pages_read_engagement`
+- `pages_show_list`
 
-## VPS Deploy With systemd
-
-Example target path:
+Validate before starting:
 
 ```bash
-/opt/ads-30nice
+npm run check
+npm run check:env
 ```
 
-Install:
+## Deploy To VPS With systemd
+
+Assumption: DNS `ads.30nice.vn` points to the VPS public IP.
+
+Install Node.js 20+ or 24 LTS, Nginx, and Certbot on the VPS.
 
 ```bash
+sudo mkdir -p /opt/ads-30nice
+sudo chown -R $USER:$USER /opt/ads-30nice
 git clone <github-repo-url> /opt/ads-30nice
 cd /opt/ads-30nice
 cp .env.example .env
+npm run secret
 nano .env
 npm run check
+npm run check:env
 ```
 
-Create `/etc/systemd/system/ads-30nice.service`:
-
-```ini
-[Unit]
-Description=Ads 30Nice
-After=network.target
-
-[Service]
-Type=simple
-WorkingDirectory=/opt/ads-30nice
-EnvironmentFile=/opt/ads-30nice/.env
-ExecStart=/usr/bin/node /opt/ads-30nice/server.js
-Restart=always
-RestartSec=5
-User=www-data
-Group=www-data
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Start:
+Prepare data directory:
 
 ```bash
+sudo mkdir -p /opt/ads-30nice/data
+sudo chown -R www-data:www-data /opt/ads-30nice/data
+```
+
+Install service:
+
+```bash
+sudo cp deploy/ads-30nice.service /etc/systemd/system/ads-30nice.service
 sudo systemctl daemon-reload
 sudo systemctl enable ads-30nice
 sudo systemctl start ads-30nice
 sudo systemctl status ads-30nice
 ```
 
-## Nginx For ads.30nice.vn
+Install Nginx:
 
-```nginx
-server {
-    server_name ads.30nice.vn;
-
-    location / {
-        proxy_pass http://127.0.0.1:3010;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
+```bash
+sudo cp deploy/nginx-ads.30nice.vn.conf /etc/nginx/sites-available/ads.30nice.vn
+sudo ln -s /etc/nginx/sites-available/ads.30nice.vn /etc/nginx/sites-enabled/ads.30nice.vn
+sudo nginx -t
+sudo systemctl reload nginx
 ```
 
-Enable TLS:
+Enable HTTPS:
 
 ```bash
 sudo certbot --nginx -d ads.30nice.vn
 ```
 
-## Next Milestones
+Smoke tests:
 
-1. Add OAuth/token management for Meta instead of manual token env.
-2. Add persistent database, user login, and role-based access.
-3. Add ad set/ad/creative breakdowns.
-4. Add campaign draft publishing to Meta as `PAUSED`.
-5. Add scheduled sync and historical trend charts.
-6. Add industry templates and approval workflow.
+```bash
+curl -I https://ads.30nice.vn
+curl https://ads.30nice.vn/api/health
+```
+
+## Optional Docker Compose
+
+```bash
+cp .env.example .env
+npm run secret
+nano .env
+docker compose up -d --build
+```
+
+The container binds to `127.0.0.1:3010`; keep Nginx in front for HTTPS.
+
+## Update Deployment
+
+```bash
+cd /opt/ads-30nice
+git pull
+npm run check
+sudo systemctl restart ads-30nice
+sudo systemctl status ads-30nice
+```
+
+## Roadmap
+
+1. Add historical daily sync and trend charts.
+2. Add ad set/ad/creative drilldown.
+3. Add Meta OAuth token refresh flow.
+4. Add draft campaign publishing to Meta as `PAUSED`.
+5. Add approval workflow and industry template library.

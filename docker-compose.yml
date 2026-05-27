@@ -1,0 +1,11 @@
+services:
+  ads-30nice:
+    build: .
+    container_name: ads-30nice
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:3010:3010"
+    volumes:
+      - ./data:/app/data
