@@ -52,7 +52,7 @@ function formatSpend(value) {
 }
 
 function renderAccounts(meta) {
-  $("#metaStatus").textContent = meta.configured ? "Meta API da cau hinh" : "Dang dung du lieu mau";
+  $("#metaStatus").textContent = meta.configured ? "Meta API đã cấu hình" : "Đang dùng dữ liệu mẫu";
   $("#accountGrid").innerHTML = state.accounts
     .map(
       (account) => `
@@ -137,20 +137,20 @@ function renderRecommendations() {
 
 function renderPlans() {
   if (!state.plans.length) {
-    $("#plansList").innerHTML = `<p>Chua co ke hoach nao duoc luu.</p>`;
+    $("#plansList").innerHTML = `<p>Chưa có kế hoạch nào được lưu.</p>`;
     return;
   }
 
   $("#plansList").innerHTML = state.plans
     .map((plan) => {
       const output = plan.output || {};
-      const budget = output.budget?.daily ? formatSpend(output.budget.daily) : "Chua dat";
+      const budget = output.budget?.daily ? formatSpend(output.budget.daily) : "Chưa đặt";
       return `
         <article class="plan-item">
           <div>
-            <h3>${escapeHtml(output.name || plan.input?.industry || "Ke hoach moi")}</h3>
+            <h3>${escapeHtml(output.name || plan.input?.industry || "Kế hoạch mới")}</h3>
             <p>${escapeHtml(output.objective || "")} · ${escapeHtml(budget)} · ${escapeHtml(plan.status)}</p>
-            <p class="plan-meta">Tao luc ${escapeHtml(new Date(plan.createdAt).toLocaleString("vi-VN"))}</p>
+            <p class="plan-meta">Tạo lúc ${escapeHtml(new Date(plan.createdAt).toLocaleString("vi-VN"))}</p>
           </div>
           <button class="secondary" data-plan-id="${escapeHtml(plan.id)}">Xem JSON</button>
         </article>
@@ -213,7 +213,7 @@ async function previewPlan() {
     body: JSON.stringify(formPayload())
   });
   $("#planPreview").textContent = JSON.stringify(payload.data, null, 2);
-  $("#previewUpdated").textContent = `Cap nhat luc ${new Date().toLocaleTimeString("vi-VN")}`;
+  $("#previewUpdated").textContent = `Cập nhật lúc ${new Date().toLocaleTimeString("vi-VN")}`;
 }
 
 $("#refreshAccounts").addEventListener("click", () => loadAccounts().catch((error) => toast(error.message)));
@@ -231,7 +231,7 @@ $("#plannerForm").addEventListener("submit", async (event) => {
     body: JSON.stringify(formPayload())
   });
   $("#planPreview").textContent = JSON.stringify(payload.data.output, null, 2);
-  toast("Da luu ke hoach chien dich.");
+  toast("Đã lưu kế hoạch chiến dịch.");
   await loadPlans();
 });
 
@@ -248,7 +248,7 @@ $("#loginForm").addEventListener("submit", async (event) => {
     })
   });
   $("#loginScreen").hidden = true;
-  toast("Dang nhap thanh cong.");
+  toast("Đăng nhập thành công.");
   await boot();
 });
 

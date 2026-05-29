@@ -34,7 +34,7 @@ export const sampleAdAccounts = [
 export const sampleCampaigns = [
   {
     id: "238501000001",
-    name: "Lead Form - Dich vu dia phuong - HCM",
+    name: "Lead Form - Dịch vụ địa phương - HCM",
     objective: "OUTCOME_LEADS",
     status: "ACTIVE",
     effective_status: "ACTIVE",
@@ -51,7 +51,7 @@ export const sampleCampaigns = [
   },
   {
     id: "238501000002",
-    name: "Messages - Tu van nhanh - Ha Noi",
+    name: "Messages - Tư vấn nhanh - Hà Nội",
     objective: "OUTCOME_ENGAGEMENT",
     status: "ACTIVE",
     effective_status: "ACTIVE",
@@ -68,7 +68,7 @@ export const sampleCampaigns = [
   },
   {
     id: "238501000003",
-    name: "Remarketing - Uu dai 7 ngay",
+    name: "Remarketing - Ưu đãi 7 ngày",
     objective: "OUTCOME_SALES",
     status: "PAUSED",
     effective_status: "PAUSED",

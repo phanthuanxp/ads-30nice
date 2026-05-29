@@ -7,36 +7,36 @@ export function buildOptimizationNotes(campaigns) {
     if (campaign.spend > 0 && campaign.results === 0) {
       notes.push({
         priority: "high",
-        title: "Spend co ket qua bang 0",
+        title: "Spend có kết quả bằng 0",
         campaign: campaign.name,
-        action: "Tam dung hoac doi objective/creative truoc khi tang ngan sach."
+        action: "Tạm dừng hoặc đổi objective/creative trước khi tăng ngân sách."
       });
     }
 
     if (campaign.ctr > 0 && campaign.ctr < 1.2) {
       notes.push({
         priority: "medium",
-        title: "CTR thap",
+        title: "CTR thấp",
         campaign: campaign.name,
-        action: "Tao 3-5 bien the hook va creative moi, uu tien message dau tien ro hon."
+        action: "Tạo 3-5 biến thể hook và creative mới, ưu tiên message đầu tiên rõ hơn."
       });
     }
 
     if (campaign.frequency >= 2.6 && campaign.ctr < 2) {
       notes.push({
         priority: "medium",
-        title: "Dau hieu lap tan suat",
+        title: "Dấu hiệu lặp tần suất",
         campaign: campaign.name,
-        action: "Mo rong audience hoac refresh creative de tranh giam hieu qua."
+        action: "Mở rộng audience hoặc refresh creative để tránh giảm hiệu quả."
       });
     }
 
     if (campaign.results >= 30 && campaign.costPerResult > 0 && campaign.ctr >= 2.5) {
       notes.push({
         priority: "low",
-        title: "Co the scale co kiem soat",
+        title: "Có thể scale có kiểm soát",
         campaign: campaign.name,
-        action: "Tang budget 15-25% va theo doi CPA trong 24-48 gio."
+        action: "Tăng budget 15-25% và theo dõi CPA trong 24-48 giờ."
       });
     }
   }
@@ -44,9 +44,9 @@ export function buildOptimizationNotes(campaigns) {
   if (notes.length === 0) {
     notes.push({
       priority: "low",
-      title: "Chua co canh bao lon",
-      campaign: "Tong quan",
-      action: "Tiep tuc gom du lieu, uu tien A/B test offer va creative moi."
+      title: "Chưa có cảnh báo lớn",
+      campaign: "Tổng quan",
+      action: "Tiếp tục gom dữ liệu, ưu tiên A/B test offer và creative mới."
     });
   }
 
@@ -71,24 +71,24 @@ export function buildCampaignPlan(input) {
     budget: {
       daily: dailyBudget,
       testPhaseDays: 5,
-      scaleRule: "Tang 15-25% khi CPA on dinh va co it nhat 30 ket qua."
+      scaleRule: "Tăng 15-25% khi CPA ổn định và có ít nhất 30 kết quả."
     },
     structure: {
       campaigns: 1,
       adSets: [
         {
           name: "Broad + Advantage",
-          audience: `${input.location || "Viet Nam"}, age ${input.ageMin || 22}-${input.ageMax || 55}`,
+          audience: `${input.location || "Việt Nam"}, age ${input.ageMin || 22}-${input.ageMax || 55}`,
           budgetShare: "40%"
         },
         {
           name: "Interest Stack",
-          audience: input.audience || "Nhom quan tam chinh theo nganh",
+          audience: input.audience || "Nhóm quan tâm chính theo ngành",
           budgetShare: "35%"
         },
         {
           name: "Remarketing",
-          audience: "Nguoi da tuong tac page/video/website 30-180 ngay",
+          audience: "Người đã tương tác page/video/website 30-180 ngày",
           budgetShare: "25%"
         }
       ],
@@ -98,17 +98,17 @@ export function buildCampaignPlan(input) {
     creatives: [
       {
         angle: "Pain point",
-        hook: `Van de lon nhat cua khach hang khi can ${input.offer || "giai phap"} la gi?`,
+        hook: `Vấn đề lớn nhất của khách hàng khi cần ${input.offer || "giải pháp"} là gì?`,
         format: "Short video or image proof"
       },
       {
         angle: "Offer",
-        hook: `${input.offer || "Uu dai"} voi loi ich ro trong 1 cau dau tien.`,
+        hook: `${input.offer || "Ưu đãi"} với lợi ích rõ trong 1 câu đầu tiên.`,
         format: "Static image with clear CTA"
       },
       {
         angle: "Trust",
-        hook: "Bang chung ket qua, review, quy trinh hoac cam ket dich vu.",
+        hook: "Bằng chứng kết quả, review, quy trình hoặc cam kết dịch vụ.",
         format: "UGC/review style"
       }
     ],

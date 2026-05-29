@@ -11,16 +11,16 @@
       <form class="login-card" id="loginForm">
         <span class="brand-mark">30</span>
         <h1>Ads Operations</h1>
-        <p>Dang nhap de quan ly he thong Meta Ads noi bo.</p>
+        <p>Đăng nhập để quản lý hệ thống Meta Ads nội bộ.</p>
         <label>
-          Tai khoan
+          Tài khoản
           <input name="username" autocomplete="username" required />
         </label>
         <label>
-          Mat khau
+          Mật khẩu
           <input name="password" type="password" autocomplete="current-password" required />
         </label>
-        <button type="submit">Dang nhap</button>
+        <button type="submit">Đăng nhập</button>
       </form>
     </div>
 
@@ -34,10 +34,10 @@
           </div>
         </div>
         <nav>
-          <a href="#overview" class="active">Tong quan</a>
-          <a href="#planner">Lap chien dich</a>
-          <a href="#performance">Hieu qua</a>
-          <a href="#rules">Toi uu</a>
+          <a href="#overview" class="active">Tổng quan</a>
+          <a href="#planner">Lập chiến dịch</a>
+          <a href="#performance">Hiệu quả</a>
+          <a href="#rules">Tối ưu</a>
         </nav>
       </aside>
 
@@ -45,21 +45,21 @@
         <header class="topbar">
           <div>
             <p class="eyebrow">ads.30nice.vn</p>
-            <h1>Quan ly nghien cuu, lap ke hoach va toi uu Meta Ads</h1>
+            <h1>Quản lý nghiên cứu, lập kế hoạch và tối ưu Meta Ads</h1>
           </div>
           <div class="top-actions">
-            <div class="status-pill" id="metaStatus">Dang kiem tra Meta API</div>
-            <button class="secondary" id="logoutButton">Dang xuat</button>
+            <div class="status-pill" id="metaStatus">Đang kiểm tra Meta API</div>
+            <button class="secondary" id="logoutButton">Đăng xuất</button>
           </div>
         </header>
 
         <section id="overview" class="section">
           <div class="section-head">
             <div>
-              <h2>Tai khoan quang cao</h2>
-              <p>Mot Meta Business, nhieu ad accounts, theo doi tap trung.</p>
+              <h2>Tài khoản quảng cáo</h2>
+              <p>Một Meta Business, nhiều ad accounts, theo dõi tập trung.</p>
             </div>
-            <button class="icon-button" id="refreshAccounts" title="Tai lai tai khoan">↻</button>
+            <button class="icon-button" id="refreshAccounts" title="Tải lại tài khoản">↻</button>
           </div>
           <div class="account-grid" id="accountGrid"></div>
         </section>
@@ -68,50 +68,50 @@
           <form class="panel" id="plannerForm">
             <div class="section-head compact">
               <div>
-                <h2>Lap chien dich</h2>
-                <p>Tao ban nhap truoc khi dua len Meta.</p>
+                <h2>Lập chiến dịch</h2>
+                <p>Tạo bản nháp trước khi đưa lên Meta.</p>
               </div>
-              <button type="submit">Luu ke hoach</button>
+              <button type="submit">Lưu kế hoạch</button>
             </div>
 
             <div class="form-grid">
               <label>
-                Nganh/dich vu
-                <input name="industry" placeholder="Spa, taxi, BDS, tuyen dung..." required />
+                Ngành/dịch vụ
+                <input name="industry" placeholder="Spa, taxi, BĐS, tuyển dụng..." required />
               </label>
               <label>
-                Offer chinh
-                <input name="offer" placeholder="Tu van mien phi, uu dai 7 ngay..." required />
+                Offer chính
+                <input name="offer" placeholder="Tư vấn miễn phí, ưu đãi 7 ngày..." required />
               </label>
               <label>
-                Khu vuc
-                <input name="location" placeholder="Ha Noi, HCM, Da Nang..." required />
+                Khu vực
+                <input name="location" placeholder="Hà Nội, HCM, Đà Nẵng..." required />
               </label>
               <label>
-                Muc tieu
+                Mục tiêu
                 <select name="goal">
                   <option value="leads">Lead form</option>
-                  <option value="messages">Tin nhan</option>
-                  <option value="sales">Chuyen doi/ban hang</option>
+                  <option value="messages">Tin nhắn</option>
+                  <option value="sales">Chuyển đổi/bán hàng</option>
                   <option value="traffic">Traffic</option>
                   <option value="awareness">Nhan dien</option>
                 </select>
               </label>
               <label>
-                Ngan sach/ngay
+                Ngân sách/ngày
                 <input name="dailyBudget" type="number" min="0" step="10000" placeholder="500000" />
               </label>
               <label>
-                Tuoi toi thieu
+                Tuổi tối thiểu
                 <input name="ageMin" type="number" min="13" value="22" />
               </label>
               <label>
-                Tuoi toi da
+                Tuổi tối đa
                 <input name="ageMax" type="number" min="13" value="55" />
               </label>
               <label class="wide">
-                Audience/insight dau vao
-                <textarea name="audience" rows="4" placeholder="Mo ta khach hang, pain point, khu vuc, so thich, hanh vi..."></textarea>
+                Audience/insight đầu vào
+                <textarea name="audience" rows="4" placeholder="Mô tả khách hàng, pain point, khu vực, sở thích, hành vi..."></textarea>
               </label>
             </div>
           </form>
@@ -119,10 +119,10 @@
           <div class="panel preview">
             <div class="section-head compact">
               <div>
-                <h2>Ban de xuat</h2>
-                <p id="previewUpdated">Cap nhat theo form.</p>
+                <h2>Bản đề xuất</h2>
+                <p id="previewUpdated">Cập nhật theo form.</p>
               </div>
-              <button id="previewButton">Xem truoc</button>
+              <button id="previewButton">Xem trước</button>
             </div>
             <pre id="planPreview"></pre>
           </div>
@@ -131,8 +131,8 @@
         <section id="performance" class="section">
           <div class="section-head">
             <div>
-              <h2>Hieu qua chien dich</h2>
-              <p>Chon ad account de xem campaign 7 ngay gan nhat.</p>
+              <h2>Hiệu quả chiến dịch</h2>
+              <p>Chọn ad account để xem campaign 7 ngày gần nhất.</p>
             </div>
             <select id="accountSelect"></select>
           </div>
@@ -159,8 +159,8 @@
         <section id="rules" class="section">
           <div class="section-head">
             <div>
-              <h2>Danh gia va toi uu</h2>
-              <p>Canh bao uu tien theo du lieu campaign.</p>
+              <h2>Đánh giá và tối ưu</h2>
+              <p>Cảnh báo ưu tiên theo dữ liệu campaign.</p>
             </div>
           </div>
           <div class="recommendations" id="recommendations"></div>
@@ -169,10 +169,10 @@
         <section id="saved-plans" class="section">
           <div class="section-head">
             <div>
-              <h2>Ke hoach da luu</h2>
-              <p>Cac ban nhap chien dich dang cho duyet hoac trien khai.</p>
+              <h2>Kế hoạch đã lưu</h2>
+              <p>Các bản nháp chiến dịch đang chờ duyệt hoặc triển khai.</p>
             </div>
-            <button class="secondary" id="refreshPlans">Tai lai</button>
+            <button class="secondary" id="refreshPlans">Tải lại</button>
           </div>
           <div class="plans-list" id="plansList"></div>
         </section>
