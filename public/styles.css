@@ -255,6 +255,20 @@ p {
   gap: 12px;
 }
 
+.config-status {
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfd;
+  color: var(--muted);
+  padding: 12px;
+  line-height: 1.45;
+}
+
+.config-status strong {
+  color: var(--ink);
+}
+
 .account-card {
   border: 1px solid var(--line);
   border-radius: 8px;

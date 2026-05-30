@@ -3,9 +3,9 @@ import { fileURLToPath } from "node:url";
 import fs from "node:fs";
 
 const rootDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const envPath = path.join(rootDir, ".env");
 
 function loadDotEnv() {
-  const envPath = path.join(rootDir, ".env");
   if (!fs.existsSync(envPath)) return;
 
   const lines = fs.readFileSync(envPath, "utf8").split(/\r?\n/);
@@ -50,4 +50,62 @@ export function hasMetaConfig() {
 
 export function hasAuthConfig() {
   return Boolean(config.auth.username && config.auth.password && config.auth.sessionSecret);
+}
+
+export function getPublicMetaConfig() {
+  const token = config.meta.accessToken;
+
+  return {
+    configured: hasMetaConfig(),
+    apiVersion: config.meta.apiVersion,
+    businessId: config.meta.businessId,
+    accessTokenSet: Boolean(token),
+    accessTokenPreview: token ? `${token.slice(0, 6)}...${token.slice(-4)}` : ""
+  };
+}
+
+function updateEnvFile(values) {
+  const existing = fs.existsSync(envPath) ? fs.readFileSync(envPath, "utf8").split(/\r?\n/) : [];
+  const seen = new Set();
+  const next = existing.map((line) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#") || !line.includes("=")) return line;
+
+    const key = line.split("=", 1)[0];
+    if (!Object.prototype.hasOwnProperty.call(values, key)) return line;
+
+    seen.add(key);
+    return `${key}=${values[key]}`;
+  });
+
+  for (const [key, value] of Object.entries(values)) {
+    if (!seen.has(key)) {
+      next.push(`${key}=${value}`);
+    }
+  }
+
+  fs.writeFileSync(envPath, `${next.filter((line, index) => line || index < next.length - 1).join("\n")}\n`, {
+    encoding: "utf8",
+    mode: 0o640
+  });
+}
+
+export function setMetaConfig({ apiVersion, businessId, accessToken }) {
+  const nextApiVersion = apiVersion || config.meta.apiVersion || "v25.0";
+  const nextBusinessId = String(businessId || "").trim();
+  const nextAccessToken = String(accessToken || "").trim();
+
+  config.meta.apiVersion = nextApiVersion;
+  config.meta.businessId = nextBusinessId;
+  config.meta.accessToken = nextAccessToken;
+
+  process.env.META_API_VERSION = nextApiVersion;
+  process.env.META_BUSINESS_ID = nextBusinessId;
+  process.env.META_ACCESS_TOKEN = nextAccessToken;
+
+  updateEnvFile({
+    META_API_VERSION: nextApiVersion,
+    META_BUSINESS_ID: nextBusinessId,
+    META_ACCESS_TOKEN: nextAccessToken
+  });
 }

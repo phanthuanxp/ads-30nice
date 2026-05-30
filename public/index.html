@@ -35,6 +35,7 @@
         </div>
         <nav>
           <a href="#overview" class="active">Tổng quan</a>
+          <a href="#meta-config">Cấu hình Meta</a>
           <a href="#planner">Lập chiến dịch</a>
           <a href="#performance">Hiệu quả</a>
           <a href="#rules">Tối ưu</a>
@@ -62,6 +63,33 @@
             <button class="icon-button" id="refreshAccounts" title="Tải lại tài khoản">↻</button>
           </div>
           <div class="account-grid" id="accountGrid"></div>
+        </section>
+
+        <section id="meta-config" class="section">
+          <form id="metaConfigForm">
+            <div class="section-head">
+              <div>
+                <h2>Cấu hình Meta API</h2>
+                <p>Nhập Business ID và System User Access Token để hệ thống kết nối, kiểm tra và quét tài khoản quảng cáo.</p>
+              </div>
+              <button type="submit">Kiểm tra và lưu</button>
+            </div>
+            <div class="form-grid">
+              <label>
+                API Version
+                <input name="apiVersion" value="v25.0" required />
+              </label>
+              <label>
+                Meta Business ID
+                <input name="businessId" placeholder="5810693325718389" required />
+              </label>
+              <label class="wide">
+                Meta Access Token
+                <input name="accessToken" type="password" placeholder="Dán System User Access Token vào đây" autocomplete="off" required />
+              </label>
+            </div>
+            <div class="config-status" id="metaConfigStatus"></div>
+          </form>
         </section>
 
         <section id="planner" class="section split">

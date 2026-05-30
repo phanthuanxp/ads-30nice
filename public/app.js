@@ -3,6 +3,7 @@ const state = {
   campaigns: [],
   recommendations: [],
   plans: [],
+  metaConfig: null,
   session: null
 };
 
@@ -74,6 +75,18 @@ function renderAccounts(meta) {
   $("#accountSelect").innerHTML = state.accounts
     .map((account) => `<option value="${escapeHtml(account.id)}">${escapeHtml(account.name)}</option>`)
     .join("");
+}
+
+function renderMetaConfig() {
+  const meta = state.metaConfig;
+  if (!meta) return;
+
+  $("#metaConfigForm").elements.apiVersion.value = meta.apiVersion || "v25.0";
+  $("#metaConfigForm").elements.businessId.value = meta.businessId || "";
+  $("#metaConfigForm").elements.accessToken.value = "";
+  $("#metaConfigStatus").innerHTML = meta.configured
+    ? `Đang kết nối với Business ID <strong>${escapeHtml(meta.businessId)}</strong>. Token hiện tại: <strong>${escapeHtml(meta.accessTokenPreview)}</strong>.`
+    : "Chưa cấu hình Meta API. Hệ thống sẽ dùng dữ liệu mẫu cho đến khi anh nhập Business ID và Access Token.";
 }
 
 function renderMetrics() {
@@ -177,6 +190,12 @@ async function loadAccounts() {
   }
 }
 
+async function loadMetaConfig() {
+  const payload = await api("/api/meta-config");
+  state.metaConfig = payload.data;
+  renderMetaConfig();
+}
+
 async function loadPlans() {
   const payload = await api("/api/plans");
   state.plans = payload.data;
@@ -237,6 +256,31 @@ $("#plannerForm").addEventListener("submit", async (event) => {
 
 $("#refreshPlans").addEventListener("click", () => loadPlans().catch((error) => toast(error.message)));
 
+$("#metaConfigForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  try {
+    const form = new FormData(event.currentTarget);
+    $("#metaConfigStatus").textContent = "Đang kiểm tra token với Meta API...";
+
+    const payload = await api("/api/meta-config", {
+      method: "POST",
+      body: JSON.stringify({
+        apiVersion: form.get("apiVersion"),
+        businessId: form.get("businessId"),
+        accessToken: form.get("accessToken")
+      })
+    });
+
+    state.metaConfig = payload.data;
+    renderMetaConfig();
+    toast(`Đã kết nối Meta. Tìm thấy ${payload.validation.accountCount} tài khoản quảng cáo.`);
+    await loadAccounts();
+  } catch (error) {
+    $("#metaConfigStatus").textContent = error.message;
+    toast(error.message);
+  }
+});
+
 $("#loginForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = new FormData(event.currentTarget);
@@ -263,6 +307,7 @@ async function boot() {
   $("#loginScreen").hidden = state.session.authenticated;
   if (!state.session.authenticated) return;
 
+  await loadMetaConfig();
   await loadAccounts();
   await loadPlans();
   await previewPlan();

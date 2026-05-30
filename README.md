@@ -84,6 +84,8 @@ Prepare data directory:
 ```bash
 sudo mkdir -p /opt/ads-30nice/data
 sudo chown -R www-data:www-data /opt/ads-30nice/data
+sudo chown root:www-data /opt/ads-30nice/.env
+sudo chmod 660 /opt/ads-30nice/.env
 ```
 
 Install service:

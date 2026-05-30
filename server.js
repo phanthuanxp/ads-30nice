@@ -1,9 +1,9 @@
 import http from "node:http";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { config } from "./src/config.js";
+import { config, getPublicMetaConfig, setMetaConfig } from "./src/config.js";
 import { createPlan, listPlans } from "./src/store.js";
-import { getAdAccounts, getCampaigns, getMetaHealth } from "./src/meta-client.js";
+import { getAdAccounts, getCampaigns, getMetaHealth, validateMetaCredentials } from "./src/meta-client.js";
 import { buildCampaignPlan, buildOptimizationNotes } from "./src/recommendations.js";
 import {
   assertAuthenticated,
@@ -148,6 +148,32 @@ async function routeApi(request, response, url) {
   }
 
   assertAuthenticated(request);
+
+  if (url.pathname === "/api/meta-config" && request.method === "GET") {
+    sendJson(response, 200, { data: getPublicMetaConfig() });
+    return true;
+  }
+
+  if (url.pathname === "/api/meta-config" && request.method === "POST") {
+    const input = await readBody(request);
+    const apiVersion = input.apiVersion || config.meta.apiVersion || "v25.0";
+    const businessId = String(input.businessId || "").trim();
+    const accessToken = String(input.accessToken || "").trim();
+
+    if (!businessId || !accessToken) {
+      sendJson(response, 400, { error: "Vui lòng nhập Business ID và Access Token." });
+      return true;
+    }
+
+    const validation = await validateMetaCredentials({ apiVersion, businessId, accessToken });
+    setMetaConfig({ apiVersion, businessId, accessToken });
+
+    sendJson(response, 200, {
+      data: getPublicMetaConfig(),
+      validation
+    });
+    return true;
+  }
 
   if (url.pathname === "/api/ad-accounts" && request.method === "GET") {
     sendJson(response, 200, { data: await getAdAccounts(), meta: getMetaHealth() });

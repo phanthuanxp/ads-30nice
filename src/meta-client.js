@@ -1,7 +1,9 @@
 import { config, hasMetaConfig } from "./config.js";
 import { sampleAdAccounts, sampleCampaigns } from "./sample-data.js";
 
-const graphBase = `https://graph.facebook.com/${config.meta.apiVersion}`;
+function graphBase(apiVersion = config.meta.apiVersion) {
+  return `https://graph.facebook.com/${apiVersion}`;
+}
 
 function normalizeAccountId(accountId) {
   return accountId.startsWith("act_") ? accountId : `act_${accountId}`;
@@ -14,7 +16,7 @@ async function graphGet(pathname, params = {}) {
     throw error;
   }
 
-  const url = new URL(`${graphBase}/${pathname.replace(/^\//, "")}`);
+  const url = new URL(`${graphBase()}/${pathname.replace(/^\//, "")}`);
   url.searchParams.set("access_token", config.meta.accessToken);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== null && value !== "") {
@@ -75,6 +77,46 @@ export async function getAdAccounts() {
   }
 
   return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export async function validateMetaCredentials({ apiVersion, businessId, accessToken }) {
+  const fields = [
+    "id",
+    "name",
+    "account_status",
+    "currency",
+    "timezone_name"
+  ].join(",");
+  async function fetchAccounts(edge) {
+    const url = new URL(`${graphBase(apiVersion)}/${String(businessId).trim()}/${edge}`);
+    url.searchParams.set("access_token", String(accessToken).trim());
+    url.searchParams.set("fields", fields);
+    url.searchParams.set("limit", "25");
+
+    const response = await fetch(url);
+    const payload = await response.json();
+
+    if (!response.ok) {
+      const error = new Error(payload?.error?.message || "Không thể kết nối Meta API.");
+      error.statusCode = response.status;
+      error.details = payload?.error;
+      throw error;
+    }
+
+    return payload.data || [];
+  }
+
+  const [owned, client] = await Promise.all([
+    fetchAccounts("owned_ad_accounts"),
+    fetchAccounts("client_ad_accounts")
+  ]);
+
+  const accounts = [...new Map([...owned, ...client].map((account) => [account.id, account])).values()];
+
+  return {
+    accountCount: accounts.length,
+    accounts
+  };
 }
 
 function pickActionCount(actions = [], keys) {
