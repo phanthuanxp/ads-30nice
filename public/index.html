@@ -54,13 +54,39 @@
           </div>
         </header>
 
+        <section class="command-center" aria-label="Tổng quan vận hành">
+          <article class="summary-card">
+            <span>Tài khoản quảng cáo</span>
+            <strong id="summaryAccounts">0</strong>
+            <small id="summaryAccountsMeta">Chưa tải dữ liệu</small>
+          </article>
+          <article class="summary-card">
+            <span>Campaign đang bật</span>
+            <strong id="summaryActiveCampaigns">0</strong>
+            <small>Trong tài khoản đang chọn</small>
+          </article>
+          <article class="summary-card">
+            <span>Chi tiêu</span>
+            <strong id="summarySpend">0 ₫</strong>
+            <small id="summaryDatePreset">7 ngày gần nhất</small>
+          </article>
+          <article class="summary-card alert">
+            <span>Cảnh báo tối ưu</span>
+            <strong id="summaryAlerts">0</strong>
+            <small>Ưu tiên xử lý hôm nay</small>
+          </article>
+        </section>
+
         <section id="overview" class="section">
           <div class="section-head">
             <div>
               <h2>Tài khoản quảng cáo</h2>
               <p>Một Meta Business, nhiều ad accounts, theo dõi tập trung.</p>
             </div>
-            <button class="icon-button" id="refreshAccounts" title="Tải lại tài khoản">↻</button>
+            <div class="toolbar">
+              <input id="accountSearch" placeholder="Tìm theo tên hoặc ID tài khoản" />
+              <button class="icon-button" id="refreshAccounts" title="Tải lại tài khoản">↻</button>
+            </div>
           </div>
           <div class="account-grid" id="accountGrid"></div>
         </section>
@@ -162,8 +188,18 @@
               <h2>Hiệu quả chiến dịch</h2>
               <p>Chọn ad account để xem campaign 7 ngày gần nhất.</p>
             </div>
-            <select id="accountSelect"></select>
+            <div class="toolbar">
+              <select id="datePreset">
+                <option value="last_7d">7 ngày gần nhất</option>
+                <option value="last_14d">14 ngày gần nhất</option>
+                <option value="last_30d">30 ngày gần nhất</option>
+                <option value="this_month">Tháng này</option>
+                <option value="last_month">Tháng trước</option>
+              </select>
+              <select id="accountSelect"></select>
+            </div>
           </div>
+          <div class="selected-account" id="selectedAccountSummary"></div>
           <div class="metric-row" id="metricRow"></div>
           <div class="table-wrap">
             <table>

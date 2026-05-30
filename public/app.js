@@ -4,6 +4,9 @@ const state = {
   recommendations: [],
   plans: [],
   metaConfig: null,
+  accountQuery: "",
+  selectedAccountId: "",
+  datePreset: "last_7d",
   session: null
 };
 
@@ -52,13 +55,54 @@ function formatSpend(value) {
   return money.format(Number(value || 0));
 }
 
+function accountStatusLabel(status) {
+  const labels = {
+    1: "Đang hoạt động",
+    2: "Đã vô hiệu",
+    3: "Chưa thanh toán",
+    7: "Đang chờ xét duyệt",
+    9: "Đang chờ đóng"
+  };
+  return labels[Number(status)] || `Trạng thái ${status || "không rõ"}`;
+}
+
+function datePresetLabel(value = state.datePreset) {
+  const labels = {
+    last_7d: "7 ngày gần nhất",
+    last_14d: "14 ngày gần nhất",
+    last_30d: "30 ngày gần nhất",
+    this_month: "Tháng này",
+    last_month: "Tháng trước"
+  };
+  return labels[value] || value;
+}
+
+function selectedAccount() {
+  return state.accounts.find((account) => account.id === state.selectedAccountId) || state.accounts[0];
+}
+
 function renderAccounts(meta) {
   $("#metaStatus").textContent = meta.configured ? "Meta API đã cấu hình" : "Đang dùng dữ liệu mẫu";
-  $("#accountGrid").innerHTML = state.accounts
+  const query = state.accountQuery.trim().toLowerCase();
+  const filteredAccounts = state.accounts.filter((account) => {
+    if (!query) return true;
+    return `${account.name} ${account.id}`.toLowerCase().includes(query);
+  });
+
+  $("#summaryAccounts").textContent = number.format(state.accounts.length);
+  $("#summaryAccountsMeta").textContent = meta.configured ? "Đã kết nối Meta" : "Dữ liệu mẫu";
+
+  if (!filteredAccounts.length) {
+    $("#accountGrid").innerHTML = `<div class="empty-state">Không tìm thấy tài khoản quảng cáo phù hợp.</div>`;
+    return;
+  }
+
+  $("#accountGrid").innerHTML = filteredAccounts
     .map(
       (account) => `
-        <article class="account-card">
+        <button class="account-card ${account.id === state.selectedAccountId ? "selected" : ""}" data-account-id="${escapeHtml(account.id)}">
           <strong>${escapeHtml(account.name)}</strong>
+          <span class="account-status ${Number(account.account_status) === 1 ? "good" : "warn"}">${escapeHtml(accountStatusLabel(account.account_status))}</span>
           <div class="account-meta">
             <span>${escapeHtml(account.id)}</span>
             <span>${escapeHtml(account.currency || "VND")}</span>
@@ -67,14 +111,24 @@ function renderAccounts(meta) {
             <span>${escapeHtml(account.timezone_name || "Asia/Ho_Chi_Minh")}</span>
             <span>${account.source === "meta" ? "Meta" : "Sample"}</span>
           </div>
-        </article>
+        </button>
       `
     )
     .join("");
 
+  document.querySelectorAll("[data-account-id]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      state.selectedAccountId = button.dataset.accountId;
+      $("#accountSelect").value = state.selectedAccountId;
+      renderAccounts({ configured: state.metaConfig?.configured });
+      await loadCampaigns(state.selectedAccountId);
+    });
+  });
+
   $("#accountSelect").innerHTML = state.accounts
     .map((account) => `<option value="${escapeHtml(account.id)}">${escapeHtml(account.name)}</option>`)
     .join("");
+  $("#accountSelect").value = state.selectedAccountId;
 }
 
 function renderMetaConfig() {
@@ -105,17 +159,35 @@ function renderMetrics() {
   const cpa = totals.results > 0 ? totals.spend / totals.results : 0;
 
   $("#metricRow").innerHTML = [
-    ["Spend", formatSpend(totals.spend)],
-    ["Impressions", number.format(totals.impressions)],
+    ["Chi tiêu", formatSpend(totals.spend)],
+    ["Hiển thị", number.format(totals.impressions)],
     ["Clicks", number.format(totals.clicks)],
     ["CTR", `${number.format(ctr)}%`],
     ["CPA", formatSpend(cpa)]
   ]
     .map(([label, value]) => `<div class="metric"><span>${label}</span><strong>${value}</strong></div>`)
     .join("");
+
+  $("#summaryActiveCampaigns").textContent = number.format(
+    state.campaigns.filter((campaign) => campaign.status === "ACTIVE" || campaign.effective_status === "ACTIVE").length
+  );
+  $("#summarySpend").textContent = formatSpend(totals.spend);
+  $("#summaryDatePreset").textContent = datePresetLabel();
+  $("#summaryAlerts").textContent = number.format(state.recommendations.filter((note) => note.priority !== "low").length);
 }
 
 function renderCampaigns() {
+  if (!state.campaigns.length) {
+    $("#campaignRows").innerHTML = `
+      <tr>
+        <td colspan="8">
+          <div class="empty-state">Chưa có campaign trong khoảng thời gian đã chọn.</div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
   $("#campaignRows").innerHTML = state.campaigns
     .map(
       (campaign) => `
@@ -132,6 +204,33 @@ function renderCampaigns() {
       `
     )
     .join("");
+}
+
+function renderSelectedAccount() {
+  const account = selectedAccount();
+  if (!account) {
+    $("#selectedAccountSummary").innerHTML = "";
+    return;
+  }
+
+  $("#selectedAccountSummary").innerHTML = `
+    <div>
+      <span>Tài khoản đang xem</span>
+      <strong>${escapeHtml(account.name)}</strong>
+    </div>
+    <div>
+      <span>ID</span>
+      <strong>${escapeHtml(account.id)}</strong>
+    </div>
+    <div>
+      <span>Tiền tệ</span>
+      <strong>${escapeHtml(account.currency || "VND")}</strong>
+    </div>
+    <div>
+      <span>Trạng thái</span>
+      <strong>${escapeHtml(accountStatusLabel(account.account_status))}</strong>
+    </div>
+  `;
 }
 
 function renderRecommendations() {
@@ -183,10 +282,11 @@ function renderPlans() {
 async function loadAccounts() {
   const payload = await api("/api/ad-accounts");
   state.accounts = payload.data;
+  state.selectedAccountId = state.selectedAccountId || state.accounts[0]?.id || "";
   renderAccounts(payload.meta);
   if (state.accounts.length) {
-    $("#accountSelect").value = state.accounts[0].id;
-    await loadCampaigns(state.accounts[0].id);
+    $("#accountSelect").value = state.selectedAccountId;
+    await loadCampaigns(state.selectedAccountId);
   }
 }
 
@@ -203,9 +303,20 @@ async function loadPlans() {
 }
 
 async function loadCampaigns(accountId) {
-  const payload = await api(`/api/ad-accounts/${encodeURIComponent(accountId)}/campaigns`);
+  if (!accountId) return;
+  $("#campaignRows").innerHTML = `
+    <tr>
+      <td colspan="8">
+        <div class="empty-state">Đang tải dữ liệu campaign...</div>
+      </td>
+    </tr>
+  `;
+  renderSelectedAccount();
+
+  const payload = await api(`/api/ad-accounts/${encodeURIComponent(accountId)}/campaigns?date_preset=${encodeURIComponent(state.datePreset)}`);
   state.campaigns = payload.data;
   state.recommendations = payload.recommendations;
+  renderSelectedAccount();
   renderMetrics();
   renderCampaigns();
   renderRecommendations();
@@ -236,9 +347,21 @@ async function previewPlan() {
 }
 
 $("#refreshAccounts").addEventListener("click", () => loadAccounts().catch((error) => toast(error.message)));
+$("#accountSearch").addEventListener("input", (event) => {
+  state.accountQuery = event.target.value;
+  renderAccounts({ configured: state.metaConfig?.configured });
+});
 $("#accountSelect").addEventListener("change", (event) =>
-  loadCampaigns(event.target.value).catch((error) => toast(error.message))
+  {
+    state.selectedAccountId = event.target.value;
+    renderAccounts({ configured: state.metaConfig?.configured });
+    loadCampaigns(event.target.value).catch((error) => toast(error.message));
+  }
 );
+$("#datePreset").addEventListener("change", (event) => {
+  state.datePreset = event.target.value;
+  loadCampaigns(state.selectedAccountId).catch((error) => toast(error.message));
+});
 $("#previewButton").addEventListener("click", (event) => {
   event.preventDefault();
   previewPlan().catch((error) => toast(error.message));
